@@ -20,7 +20,7 @@
         }
     },
     "scripts": {
-        "test": "phpunit",
+        "test": "DI_INT_ENV=123 DI_FLOAT_ENV=12.3 DI_STRING_ENV=hello DI_BOOL_TRUE_ENV=1 DI_BOOL_FALSE_ENV=0 phpunit",
         "format-code": "php-cs-fixer fix --allow-risky=yes"
     },
     "require": {

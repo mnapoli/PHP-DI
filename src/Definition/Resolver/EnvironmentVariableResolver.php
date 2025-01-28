@@ -7,6 +7,7 @@ namespace DI\Definition\Resolver;
 use DI\Definition\Definition;
 use DI\Definition\EnvironmentVariableDefinition;
 use DI\Definition\Exception\InvalidDefinition;
+use PhpParser\Node\Expr\Cast;
 
 /**
  * Resolves a environment variable definition to a value.
@@ -37,7 +38,12 @@ class EnvironmentVariableResolver implements DefinitionResolver
         $value = call_user_func($this->variableReader, $definition->getVariableName());
 
         if (false !== $value) {
-            return $value;
+            return match($definition->getCast()) {
+                'int' => (int) $value,
+                'float' => (float) $value,
+                'bool' => (bool) $value,
+                default => $value,
+            };
         }
 
         if (!$definition->isOptional()) {

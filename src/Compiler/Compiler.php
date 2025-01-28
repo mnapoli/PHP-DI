@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DI\Compiler;
 
-use function chmod;
 use DI\Definition\ArrayDefinition;
+use DI\Definition\Castable;
 use DI\Definition\DecoratorDefinition;
 use DI\Definition\Definition;
 use DI\Definition\EnvironmentVariableDefinition;
@@ -18,10 +18,12 @@ use DI\Definition\StringDefinition;
 use DI\Definition\ValueDefinition;
 use DI\DependencyException;
 use DI\Proxy\ProxyFactory;
-use function dirname;
-use function file_put_contents;
 use InvalidArgumentException;
 use Laravel\SerializableClosure\Support\ReflectionClosure;
+
+use function chmod;
+use function dirname;
+use function file_put_contents;
 use function rename;
 use function sprintf;
 use function tempnam;
@@ -222,9 +224,10 @@ class Compiler
                 $variableName = $this->compileValue($definition->getVariableName());
                 $isOptional = $this->compileValue($definition->isOptional());
                 $defaultValue = $this->compileValue($definition->getDefaultValue());
+                $cast = $definition->getCast();
                 $code = <<<PHP
                             \$value = \$_ENV[$variableName] ?? \$_SERVER[$variableName] ?? getenv($variableName);
-                            if (false !== \$value) return \$value;
+                            if (false !== \$value) return ({$cast}) \$value;
                             if (!$isOptional) {
                                 throw new \DI\Definition\Exception\InvalidDefinition("The environment variable '{$definition->getVariableName()}' has not been defined");
                             }

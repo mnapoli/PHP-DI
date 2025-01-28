@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace DI\Test\IntegrationTest\Definitions;
 
 use DI\ContainerBuilder;
-use DI\Test\IntegrationTest\BaseContainerTest;
 use DI\Definition\Exception\InvalidDefinition;
+use DI\Test\IntegrationTest\BaseContainerTest;
 
 /**
  * Test environment variable definitions.
@@ -19,7 +19,7 @@ class EnvironmentVariableDefinitionTest extends BaseContainerTest
     public function test_existing_env_variable(ContainerBuilder $builder)
     {
         $expectedValue = getenv('USER');
-        if (! $expectedValue) {
+        if (!$expectedValue) {
             $this->markTestSkipped(
                 'This test relies on the presence of the USER environment variable.'
             );
@@ -32,6 +32,34 @@ class EnvironmentVariableDefinitionTest extends BaseContainerTest
 
         self::assertEntryIsCompiled($container, 'var');
         self::assertEquals($expectedValue, $container->get('var'));
+    }
+
+    /**
+     * @dataProvider provideContainer
+     */
+    public function test_cast(ContainerBuilder $builder)
+    {
+        $expectedValues = [
+            'int' => (int) getenv('DI_INT_ENV'),
+            'float' => (float) getenv('DI_FLOAT_ENV'),
+            'string' => (string) getenv('DI_STRING_ENV'),
+            'bool_true' => (bool) getenv('DI_BOOL_TRUE_ENV'),
+            'bool_false' => (bool) getenv('DI_BOOL_FALSE_ENV'),
+        ];
+
+        $builder->addDefinitions([
+            'int' => \DI\env('DI_INT_ENV')->asInt(),
+            'float' => \DI\env('DI_FLOAT_ENV')->asFloat(),
+            'string' => \DI\env('DI_STRING_ENV'),
+            'bool_true' => \DI\env('DI_BOOL_TRUE_ENV')->asBool(),
+            'bool_false' => \DI\env('DI_BOOL_FALSE_ENV')->asBool(),
+        ]);
+        $container = $builder->build();
+
+        foreach($expectedValues as $name => $expectedValue) {
+            self::assertEntryIsCompiled($container, $name);
+            self::assertSame($expectedValue, $container->get($name));
+        }
     }
 
     /**

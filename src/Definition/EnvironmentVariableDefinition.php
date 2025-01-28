@@ -10,10 +10,12 @@ namespace DI\Definition;
  *
  * @author James Harris <james.harris@icecave.com.au>
  */
-class EnvironmentVariableDefinition implements Definition
+class EnvironmentVariableDefinition implements Definition, Castable
 {
     /** Entry name. */
     private string $name = '';
+
+    private string $type = 'string';
 
     /**
      * @param string $variableName The name of the environment variable
@@ -83,5 +85,28 @@ class EnvironmentVariableDefinition implements Definition
         }
 
         return sprintf('Environment variable (' . \PHP_EOL . '%s' . \PHP_EOL . ')', $str);
+    }
+
+    public function asInt(): static
+    {
+        $this->type = 'int';
+        return $this;
+    }
+
+    public function asFloat(): static
+    {
+        $this->type = 'float';
+        return $this;
+    }
+
+    public function asBool(): static
+    {
+        $this->type = 'bool';
+        return $this;
+    }
+
+    public function getCast(): string
+    {
+        return $this->type;
     }
 }
