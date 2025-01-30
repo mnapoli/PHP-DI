@@ -125,10 +125,8 @@ class ContainerBuilder
         // Mutable definition source
         $source->setMutableDefinitionSource(new DefinitionArray([], $autowiring));
 
-        if ($this->sourceCache) {
-            if (!SourceCache::isSupported()) {
-                throw new \Exception('APCu is not enabled, PHP-DI cannot use it as a cache');
-            }
+        // use cache if isSupported check passes, otherwise proceed without cache and do not throw an exception
+        if ($this->sourceCache && SourceCache::isSupported()) {
             // Wrap the source with the cache decorator
             $source = new SourceCache($source, $this->sourceCacheNamespace);
         }
