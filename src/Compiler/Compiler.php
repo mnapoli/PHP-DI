@@ -214,9 +214,12 @@ class Compiler
                 }
                 break;
             case $definition instanceof StringDefinition:
-                $entryName = $this->compileValue($definition->getName());
-                $expression = $this->compileValue($definition->getExpression());
-                $code = 'return \DI\Definition\StringDefinition::resolveExpression(' . $entryName . ', ' . $expression . ', $this->delegateContainer);';
+                $expression = $definition->getExpression();
+                $callback = function (array $matches) use ($definition) {
+                    return '\'.$this->resolveStringPlaceholder(' . $this->compileValue($matches[1]) . ', ' . $this->compileValue($definition->getName()) . ').\'';
+                };
+                $value = preg_replace_callback('#\{([^\{\}]+)\}#', $callback, $expression);
+                $code = 'return \'' . $value . '\';';
                 break;
             case $definition instanceof EnvironmentVariableDefinition:
                 $variableName = $this->compileValue($definition->getVariableName());
