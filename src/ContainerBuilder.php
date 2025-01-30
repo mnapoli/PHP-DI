@@ -8,6 +8,7 @@ use DI\Compiler\Compiler;
 use DI\Definition\Source\AttributeBasedAutowiring;
 use DI\Definition\Source\DefinitionArray;
 use DI\Definition\Source\DefinitionFile;
+use DI\Definition\Source\DefinitionGlob;
 use DI\Definition\Source\DefinitionSource;
 use DI\Definition\Source\NoAutowiring;
 use DI\Definition\Source\ReflectionBasedAutowiring;
@@ -116,6 +117,8 @@ class ContainerBuilder
             }
             if (is_array($definitions)) {
                 return new DefinitionArray($definitions, $autowiring);
+            } elseif ($definitions instanceof DefinitionGlob) {
+                $definitions->setAutowiring($autowiring);
             }
 
             return $definitions;
