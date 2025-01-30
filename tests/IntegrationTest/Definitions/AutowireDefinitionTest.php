@@ -7,6 +7,8 @@ namespace DI\Test\IntegrationTest\Definitions;
 use DI\ContainerBuilder;
 use DI\Test\IntegrationTest\BaseContainerTest;
 use DI\Test\IntegrationTest\Definitions\AutowireDefinition\Php71;
+use DI\Test\IntegrationTest\Definitions\AutowireDefinition\VariadicConstructorInjection;
+use DI\Test\IntegrationTest\Definitions\AutowireDefinition\VariadicMethodInjection;
 use DI\Test\IntegrationTest\Definitions\AutowireDefinitionTest\ConstructorInjection;
 use DI\Test\IntegrationTest\Definitions\AutowireDefinitionTest\LazyService;
 use DI\Test\IntegrationTest\Definitions\AutowireDefinitionTest\NullableConstructorParameter;
@@ -355,6 +357,54 @@ class AutowireDefinitionTest extends BaseContainerTest
         $object = $container->get(Php71::class);
 
         self::assertEquals(new \stdClass, $object->param);
+    }
+
+    /**
+     * @dataProvider provideContainer
+     */
+    public function test_all_variadic_arguments_are_passed(ContainerBuilder $builder)
+    {
+        $arguments = ['test1', 'test2', 'test3'];
+
+        $container = $builder
+            ->useAutowiring(true)
+            ->addDefinitions([
+                VariadicConstructorInjection::class => autowire()
+                    ->constructor(...$arguments)
+            ])
+            ->build();
+
+        $object = $container->get(VariadicConstructorInjection::class);
+
+        self::assertEquals(count($arguments), count($object->values));
+
+        foreach($object->values as $index => $value) {
+            self::assertEquals($value, $arguments[$index]);
+        }
+    }
+
+    /**
+     * @dataProvider provideContainer
+     */
+    public function test_all_variadic_arguments_are_set(ContainerBuilder $builder)
+    {
+        $arguments = ['set1', 'set2', 'set3'];
+
+        $container = $builder
+            ->useAutowiring(true)
+            ->addDefinitions([
+                VariadicMethodInjection::class => autowire()
+                    ->method('set', ...$arguments)
+            ])
+            ->build();
+
+        $object = $container->get(VariadicMethodInjection::class);
+
+        self::assertEquals(count($arguments), count($object->values));
+
+        foreach($object->values as $index => $value) {
+            self::assertEquals($value, $arguments[$index]);
+        }
     }
 }
 

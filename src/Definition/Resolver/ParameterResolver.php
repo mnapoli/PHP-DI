@@ -43,7 +43,7 @@ class ParameterResolver
 
         $definitionParameters = $definition ? $definition->getParameters() : [];
 
-        foreach ($method->getParameters() as $index => $parameter) {
+        foreach ($this->getMethodParameters($method, count($definitionParameters)) as $index => $parameter) {
             if (array_key_exists($parameter->getName(), $parameters)) {
                 // Look in the $parameters array
                 $value = &$parameters[$parameter->getName()];
@@ -78,6 +78,29 @@ class ParameterResolver
         }
 
         return $args;
+    }
+
+    /**
+     * Returns method parameters.
+     *
+     * For methods with a variadic parameter, this function will pad the returned parameters up to the count
+     * of the injected parameters
+     *
+     * @param ReflectionMethod $method
+     * @param int $givenParameterCount the count of injected parameters
+     * @return ReflectionParameter[]
+     */
+    private function getMethodParameters(ReflectionMethod $method, int $givenParameterCount) : array
+    {
+        $parameters = $method->getParameters();
+
+        // Only the last parameter of the method can be variadic as per PHP specs
+        if ($parameters && end($parameters)->isVariadic()) {
+            // The parameters are padded with the last one until we match our given parameter count
+            $parameters = array_pad($parameters, $givenParameterCount, end($parameters));
+        }
+
+        return $parameters;
     }
 
     /**
